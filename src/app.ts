@@ -6,13 +6,11 @@ const app = express();
 export const createApp = (configInstance: any) => {
   try {
     const appConfig = config[configInstance];
-    const appEnv = new appConfig();
-    console.log("APP ENV: ", appEnv);
+    const { PORT } = new appConfig();
+    app.listen(PORT, () => {
+      console.log(`The application is listening on port ${PORT}!`);
+    });
   } catch (err) {
     console.log(err);
   }
 };
-
-app.listen(3000, () => {
-  console.log("The application is listening on port 3000!");
-});
