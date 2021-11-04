@@ -8,7 +8,10 @@ import {
   DeleteDateColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToMany,
+  JoinTable,
 } from "typeorm";
+import { Category } from "./Category";
 import { Comment } from "./Comment";
 import { User } from "./User";
 
@@ -25,6 +28,20 @@ export class Post {
 
   @OneToMany(() => Comment, (comment) => comment.post)
   comments!: Comment[];
+
+  @ManyToMany(() => Category, (category) => category.posts)
+  @JoinTable({
+    name: "post_categories",
+    joinColumn: {
+      name: "post_id",
+      referencedColumnName: "id",
+    },
+    inverseJoinColumn: {
+      name: "category_id",
+      referencedColumnName: "id",
+    },
+  })
+  categories!: Category[];
 
   @Column({ type: "int" })
   user_id!: number;
