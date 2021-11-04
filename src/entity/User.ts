@@ -26,8 +26,11 @@ export class User {
   @Column({ select: false })
   password!: string;
 
+  @Column({ type: "int" })
+  profile_id!: number;
+
   @OneToOne(() => Profile, (profile) => profile.user)
-  @JoinColumn()
+  @JoinColumn({ name: "profile_id" })
   profile!: Profile;
 
   @Column({ type: "int", default: 1 })
