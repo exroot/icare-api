@@ -1,23 +1,21 @@
 import { Service } from "./base.service";
 import { Repository } from "typeorm";
-import { IPost } from "../constants/interfaces";
+import { ICategory } from "../constants/interfaces";
 
 type OrderBy = "ASC" | "DESC" | 1 | -1;
 
-export class PostService extends Service {
+export class CategoryService extends Service {
   private readonly _sortableColumns: string[];
   private readonly _relations: string[];
 
   constructor(postRepo: Repository<any>) {
     super(postRepo, { useSoftDeletes: true });
-    this._relations = ["comments", "categories", "user"];
-    this._sortableColumns = ["id", "title", "categories", "user"];
+    this._relations = ["posts"];
+    this._sortableColumns = ["id", "category"];
   }
 
   async get(id: number): Promise<any> {
-    return this._repository.findOne(id, {
-      relations: this._relations,
-    });
+    return this._repository.findOne(id);
   }
 
   async getMany(
@@ -25,7 +23,7 @@ export class PostService extends Service {
     limit: number,
     sortBy: string,
     orderBy: string
-  ): Promise<IPost[]> {
+  ): Promise<ICategory[]> {
     if (!this._sortableColumns.includes(sortBy)) {
       sortBy = "id";
     }
@@ -37,7 +35,7 @@ export class PostService extends Service {
     });
   }
 
-  async create(newPost: IPost): Promise<IPost> {
+  async create(newPost: ICategory): Promise<ICategory> {
     return this._repository.save(newPost);
   }
 
@@ -45,13 +43,13 @@ export class PostService extends Service {
     return this._repository.update(id, updatedData);
   }
 
-  async search(title: string): Promise<IPost[]> {
+  async search(category: string): Promise<ICategory[]> {
     return this._repository
-      .createQueryBuilder("Post")
-      .where("Post.title LIKE :title", {
-        title: `%${title}%`,
+      .createQueryBuilder("Category")
+      .where("Post.category LIKE :category", {
+        category: `%${category}%`,
       })
-      .orderBy("Post.created_at", "DESC")
+      .orderBy("Category.created_at", "DESC")
       .limit(6)
       .getMany();
   }

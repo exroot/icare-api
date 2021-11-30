@@ -73,3 +73,10 @@ export interface IEventLog {
   user_id?: number;
   user?: IUser;
 }
+
+export interface CronjobData {
+  events: Object[];
+  permissions: Object[];
+  roles: Object[];
+  categories: Object[];
+}

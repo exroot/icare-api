@@ -15,28 +15,28 @@ export class Profile {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column()
+  @Column({ nullable: true })
   first_name!: string;
 
-  @Column()
+  @Column({ nullable: true })
   last_name!: string;
 
   @Column({ unique: true })
   username!: string;
 
-  @Column()
+  @Column({ nullable: true })
   image_avatar!: string;
 
-  @Column()
+  @Column({ nullable: true })
   image_cover!: string;
 
-  @Column({ type: "int" })
+  @Column({ type: "int", default: 0 })
   follower_count!: number;
 
-  @Column({ type: "int" })
+  @Column({ type: "int", default: 0 })
   following_count!: number;
 
-  @Column({ type: "int" })
+  @Column({ type: "int", nullable: true })
   user_id!: number;
 
   @OneToOne(() => User, (user) => user.profile)

@@ -23,11 +23,11 @@ export class AuthService {
   }
 
   async validCredentials(credentials: any): Promise<boolean> {
-    const { password, identifier } = credentials;
+    const { password, email } = credentials;
     const user = await this._userRepository.findOne({
       where: [
         {
-          email: identifier,
+          email,
         },
       ],
       select: ["password"],
@@ -40,12 +40,11 @@ export class AuthService {
 
   async register(data: any): Promise<any> {
     /* to trigger the hashing password method, an entity instance is needed, thats why .create() method is called */
-    const { password, ...user } = await this._userRepository
-      .create({
-        email: data.email,
-        password: data.password,
-      })
-      .save();
+    const userInfo = await this._userRepository.create({
+      email: data.email,
+      password: data.password,
+    });
+    const { password, ...user } = await this._userRepository.save(userInfo);
     return user;
   }
 
@@ -58,11 +57,13 @@ export class AuthService {
       ],
       relations: this._relations,
     });
-    const permissions = user.rol.permissions as IPermission[];
+    console.log("USER: ", user.role.permissions);
+    const permissions = user.role.permissions as IPermission[];
+
     const payload = {
       user_id: user.id,
       email: user.email,
-      rol: user.rol.rol,
+      role: user.role.role,
       permissions: permissions.map((p) => p.permission),
     };
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET || "", {

@@ -23,6 +23,7 @@ export class Permission {
   @CreateDateColumn({
     type: "timestamp",
     default: () => "CURRENT_TIMESTAMP(6)",
+    nullable: true,
   })
   created_at!: Date;
 
@@ -30,9 +31,10 @@ export class Permission {
     type: "timestamp",
     default: () => "CURRENT_TIMESTAMP(6)",
     onUpdate: "CURRENT_TIMESTAMP(6)",
+    nullable: true,
   })
   updated_at!: Date;
 
-  @DeleteDateColumn({ select: false })
+  @DeleteDateColumn({ select: false, nullable: true })
   deleted_at!: Date;
 }

@@ -10,7 +10,7 @@ export abstract class Service {
 
   constructor(repository: Repository<any>, args: ServiceArgument) {
     this._repository = repository;
-    this._useSoftDeletes = args?.useSoftDeletes || false;
+    this._useSoftDeletes = args.useSoftDeletes || false;
   }
 
   abstract get(id: number): Promise<any>;

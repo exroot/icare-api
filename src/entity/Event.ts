@@ -6,5 +6,5 @@ export class Event {
   id!: number;
 
   @Column()
-  body!: string;
+  event!: string;
 }

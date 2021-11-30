@@ -1,4 +1,4 @@
-import { compare, hashSync } from "bcrypt";
+import { compare, hashSync } from "bcryptjs";
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -26,7 +26,7 @@ export class User {
   @Column({ select: false })
   password!: string;
 
-  @Column({ type: "int" })
+  @Column({ type: "int", nullable: true })
   profile_id!: number;
 
   @OneToOne(() => Profile, (profile) => profile.user)
@@ -58,7 +58,7 @@ export class User {
 
   @BeforeInsert()
   @BeforeUpdate()
-  async hashPassword() {
+  hashPassword() {
     if (this.password) {
       this.password = hashSync(
         this.password,
