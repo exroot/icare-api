@@ -7,7 +7,7 @@ export const authenticated = (
   next: NextFunction
 ) => {
   try {
-    const token = req.headers["Authorization"] as string;
+    const token = req.headers.authorization as string;
     if (!token) {
       return res.status(400).json({
         code: "Bad request",

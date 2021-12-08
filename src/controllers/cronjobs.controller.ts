@@ -14,13 +14,18 @@ export const cronjobs = async (
     const relationsGeneration = await cronjobsService.createRelations();
     const categoriesGeneration = await cronjobsService.createCategories();
     const adminAccountGeneration = await cronjobsService.createAdmin();
+    const usersAndProfilesGeneration =
+      await cronjobsService.createUsersAndProfiles();
+    const postsGeneration = await cronjobsService.createPosts();
     if (
       rolesGeneration &&
       permissionGeneration &&
       eventsGeneration &&
       relationsGeneration &&
       categoriesGeneration &&
-      adminAccountGeneration
+      adminAccountGeneration &&
+      usersAndProfilesGeneration &&
+      postsGeneration
     ) {
       return res.status(200).json({
         status: 200,

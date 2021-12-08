@@ -34,18 +34,8 @@ export abstract class Service {
     }
     return this._repository.delete(id);
   }
-  async existe(id: number): Promise<any> {
-    const existe = await this._repository
-      .createQueryBuilder("Recurso")
-      .where("Recurso.id= :id", { id })
-      .getOne();
-    return {
-      notFound: !existe,
-      notFoundData: {
-        name: "Not found",
-        message: "Recurso no encontrado.",
-        status: 404,
-      },
-    };
+  async existe(id: number): Promise<boolean> {
+    const recurso = await this._repository.findOne(id);
+    return !!recurso;
   }
 }

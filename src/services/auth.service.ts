@@ -1,5 +1,5 @@
 import { Repository } from "typeorm";
-import { IPermission } from "../constants/interfaces";
+import { IPermission } from "../types/interfaces";
 import jwt from "jsonwebtoken";
 
 export class AuthService {
@@ -57,14 +57,14 @@ export class AuthService {
       ],
       relations: this._relations,
     });
-    console.log("USER: ", user.role.permissions);
     const permissions = user.role.permissions as IPermission[];
 
     const payload = {
-      user_id: user.id,
+      id: user.id,
       email: user.email,
       role: user.role.role,
       permissions: permissions.map((p) => p.permission),
+      profile: user.profile,
     };
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET || "", {
       expiresIn: "8h",
@@ -80,6 +80,9 @@ export class AuthService {
       }
       payload = decodedToken;
     });
-    return payload;
+    const user = await this._userRepository.findOne(payload.id, {
+      relations: this._relations,
+    });
+    return user;
   }
 }

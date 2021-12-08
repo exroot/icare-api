@@ -59,6 +59,41 @@ export const getPosts = async (
   }
 };
 
+export const getFeedPosts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { page, limit } = req.query;
+  const { user } = req;
+  try {
+    const postRepo = getRepository(Post);
+    const postService = new PostService(postRepo);
+    const posts = await postService.getFeedPosts(
+      parseInt(page as string),
+      parseInt(limit as string),
+      user.id
+    );
+    if (!posts) {
+      return res.status(200).json({
+        status: 200,
+        code: "Successful",
+        message: MESSAGES.GET_MANY.SUCCESS,
+        data: [],
+      });
+    }
+    return res.status(200).json({
+      status: 200,
+      code: "Successful",
+      message: MESSAGES.GET_MANY.SUCCESS,
+      data: posts,
+    });
+  } catch (err) {
+    console.log("ERROR: ", err);
+    next(err);
+  }
+};
+
 export const getPostByCategories = async (
   req: Request,
   res: Response,
@@ -130,9 +165,10 @@ export const createPost = async (
   next: NextFunction
 ) => {
   const { body } = req;
+  const { user } = req;
   try {
     // Validation
-    const { error } = postSchema.validate(body);
+    const { error } = postSchema.validate({ ...body, user_id: user.id });
     if (error) {
       return res.status(400).json({
         code: "Bad request",
@@ -142,7 +178,7 @@ export const createPost = async (
     }
     const postRepo = getRepository(Post);
     const postService = new PostService(postRepo);
-    const post = await postService.create(body);
+    const post = await postService.create({ ...body, user_id: user.id });
     if (!post) {
       return res.status(400).json({
         status: 400,
@@ -169,6 +205,7 @@ export const updatePost = async (
 ) => {
   const { body } = req;
   const { id } = req.params;
+  const { user } = req;
   try {
     const postRepo = getRepository(Post);
     const postService = new PostService(postRepo);
@@ -190,7 +227,10 @@ export const updatePost = async (
       });
     }
 
-    const post = await postService.update(parseInt(id), body);
+    const post = await postService.update(parseInt(id), {
+      ...body,
+      user_id: user.id,
+    });
     if (!post) {
       return res.status(400).json({
         status: 400,

@@ -11,7 +11,7 @@ import {
 import { Post } from "./Post";
 import { User } from "./User";
 
-@Entity()
+@Entity({ name: "comments" })
 export class Comment {
   @PrimaryGeneratedColumn()
   id!: number;

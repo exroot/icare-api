@@ -101,9 +101,9 @@ export const createComment = async (
   next: NextFunction
 ) => {
   const { body } = req;
+  const { user } = req;
   try {
-    // Validation
-    const { error } = commentSchema.validate(body);
+    const { error } = commentSchema.validate({ ...body, user_id: user.id });
     if (error) {
       return res.status(400).json({
         code: "Bad request",
@@ -113,7 +113,7 @@ export const createComment = async (
     }
     const commentRepo = getRepository(Comment);
     const commentService = new CommentService(commentRepo);
-    const comment = await commentService.create(body);
+    const comment = await commentService.create({ ...body, user_id: user.id });
     if (!comment) {
       return res.status(400).json({
         status: 400,
@@ -140,6 +140,7 @@ export const updateComment = async (
 ) => {
   const { body } = req;
   const { id } = req.params;
+  const { user } = req;
   try {
     const commentRepo = getRepository(Comment);
     const commentService = new CommentService(commentRepo);
@@ -152,7 +153,7 @@ export const updateComment = async (
       });
     }
     // Validation
-    const { error } = commentSchema.validate(body);
+    const { error } = commentSchema.validate({ ...body, user_id: user.id });
     if (error) {
       return res.status(400).json({
         code: "Bad request",
@@ -161,7 +162,10 @@ export const updateComment = async (
       });
     }
 
-    const comment = await commentService.update(parseInt(id), body);
+    const comment = await commentService.update(parseInt(id), {
+      ...body,
+      user_id: user.id,
+    });
     if (!comment) {
       return res.status(400).json({
         status: 400,

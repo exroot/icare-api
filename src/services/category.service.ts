@@ -1,6 +1,6 @@
 import { Service } from "./base.service";
 import { Repository } from "typeorm";
-import { ICategory } from "../constants/interfaces";
+import { ICategory } from "../types/interfaces";
 
 type OrderBy = "ASC" | "DESC" | 1 | -1;
 
@@ -8,8 +8,8 @@ export class CategoryService extends Service {
   private readonly _sortableColumns: string[];
   private readonly _relations: string[];
 
-  constructor(postRepo: Repository<any>) {
-    super(postRepo, { useSoftDeletes: true });
+  constructor(categoryRepo: Repository<any>) {
+    super(categoryRepo, { useSoftDeletes: true });
     this._relations = ["posts"];
     this._sortableColumns = ["id", "category"];
   }
@@ -35,8 +35,8 @@ export class CategoryService extends Service {
     });
   }
 
-  async create(newPost: ICategory): Promise<ICategory> {
-    return this._repository.save(newPost);
+  async create(newCategory: ICategory): Promise<ICategory> {
+    return this._repository.save(newCategory);
   }
 
   async update(id: number, updatedData: any): Promise<any> {

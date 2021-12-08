@@ -9,15 +9,18 @@ import {
 import { Profile } from "./Profile";
 
 @Entity()
-export class Follower {
+export class Following {
   @PrimaryGeneratedColumn()
   id!: number;
 
   @Column()
-  profile_id_1!: number;
+  user_id!: number;
 
   @Column()
-  profile_id_2!: number;
+  followed_id!: number;
+
+  @Column({ default: false })
+  notifications!: boolean;
 
   @AfterInsert()
   async follow() {
@@ -25,9 +28,13 @@ export class Follower {
       .createQueryBuilder()
       .update(Profile)
       .set({ following_count: () => "following_count + 1" })
-      .where("id = :id", { id: this.profile_id_1 })
+      .where("user_id = :id", { id: this.user_id })
+      .execute();
+    await getConnection()
+      .createQueryBuilder()
+      .update(Profile)
       .set({ follower_count: () => "follower_count + 1" })
-      .where("id = :id", { id: this.profile_id_2 })
+      .where("user_id = :id", { id: this.followed_id })
       .execute();
   }
 
@@ -37,9 +44,13 @@ export class Follower {
       .createQueryBuilder()
       .update(Profile)
       .set({ following_count: () => "following_count - 1" })
-      .where("id = :id", { id: this.profile_id_1 })
+      .where("user_id = :id", { id: this.user_id })
+      .execute();
+    await getConnection()
+      .createQueryBuilder()
+      .update(Profile)
       .set({ follower_count: () => "follower_count - 1" })
-      .where("id = :id", { id: this.profile_id_2 })
+      .where("user_id = :id", { id: this.followed_id })
       .execute();
   }
 }

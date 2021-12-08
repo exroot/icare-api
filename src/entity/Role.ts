@@ -12,7 +12,7 @@ import {
 import { Permission } from "./Permission";
 import { User } from "./User";
 
-@Entity()
+@Entity({ name: "roles" })
 export class Role {
   @PrimaryGeneratedColumn()
   id!: number;

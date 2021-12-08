@@ -12,7 +12,6 @@ export const login = async (
   const { body } = req;
   try {
     // Validation
-    console.log("BODY: ", body);
     const { error } = loginSchema.validate(body);
     if (error) {
       return res.status(400).json({
@@ -96,7 +95,7 @@ export const mySession = async (
   try {
     const userRepo = getRepository(User);
     const authService = new AuthService(userRepo);
-    const token = req.headers["Authorization"] as string;
+    const token = req.headers.authorization as string;
     const userSession = await authService.getUser(token || "");
     if (!userSession) {
       return res.status(403).json({

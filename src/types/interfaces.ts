@@ -79,4 +79,7 @@ export interface CronjobData {
   permissions: Object[];
   roles: Object[];
   categories: Object[];
+  users: Object[];
+  posts: Object[];
+  profiles: Object[];
 }

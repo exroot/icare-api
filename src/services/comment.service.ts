@@ -1,6 +1,6 @@
 import { Service } from "./base.service";
 import { Repository } from "typeorm";
-import { IComment } from "../constants/interfaces";
+import { IComment } from "../types/interfaces";
 
 type OrderBy = "ASC" | "DESC" | 1 | -1;
 
