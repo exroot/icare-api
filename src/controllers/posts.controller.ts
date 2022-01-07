@@ -64,7 +64,7 @@ export const getFeedPosts = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { page, limit } = req.query;
+  const { page, limit, show_meta } = req.query;
   const { user } = req;
   try {
     const postRepo = getRepository(Post);
@@ -82,12 +82,16 @@ export const getFeedPosts = async (
         data: [],
       });
     }
-    return res.status(200).json({
-      status: 200,
-      code: "Successful",
-      message: MESSAGES.GET_MANY.SUCCESS,
-      data: posts,
-    });
+    if (!show_meta) {
+      return res.status(200).json({
+        status: 200,
+        code: "Successful",
+        message: MESSAGES.GET_MANY.SUCCESS,
+        data: posts,
+      });
+    }
+
+    return res.status(200).json([...posts]);
   } catch (err) {
     console.log("ERROR: ", err);
     next(err);
@@ -256,6 +260,7 @@ export const deletePost = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
+  const { user } = req;
   try {
     const postRepo = getRepository(Post);
     const postService = new PostService(postRepo);
@@ -267,7 +272,7 @@ export const deletePost = async (
         status: 404,
       });
     }
-    const deleteResult = await postService.delete(parseInt(id));
+    const deleteResult = await postService.delete(parseInt(id), user.id);
     return res.status(200).json({
       status: 200,
       code: "Successful",

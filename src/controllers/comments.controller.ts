@@ -83,12 +83,7 @@ export const getCommentsByPost = async (
         data: [],
       });
     }
-    return res.status(200).json({
-      status: 200,
-      code: "Successful",
-      message: MESSAGES.GET_MANY.SUCCESS,
-      data: comments,
-    });
+    return res.status(200).json(comments);
   } catch (err) {
     console.log("ERROR: ", err);
     next(err);
@@ -102,6 +97,7 @@ export const createComment = async (
 ) => {
   const { body } = req;
   const { user } = req;
+  console.log("BODY: ", body);
   try {
     const { error } = commentSchema.validate({ ...body, user_id: user.id });
     if (error) {
@@ -191,6 +187,7 @@ export const deleteComment = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
+  const { user } = req;
   try {
     const commentRepo = getRepository(Comment);
     const commentService = new CommentService(commentRepo);
@@ -202,7 +199,7 @@ export const deleteComment = async (
         status: 404,
       });
     }
-    const deleteResult = await commentService.delete(parseInt(id));
+    const deleteResult = await commentService.delete(parseInt(id), user.id);
     return res.status(200).json({
       status: 200,
       code: "Successful",

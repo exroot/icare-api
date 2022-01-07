@@ -69,7 +69,12 @@ export class AuthService {
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET || "", {
       expiresIn: "8h",
     });
-    return { accessToken, expiresIn: 3600 };
+    const refreshToken = jwt.sign(payload, process.env.JWT_SECRET || "", {
+      expiresIn: "32h",
+    });
+    return {
+      tokens: { access: accessToken, refresh: refreshToken },
+    };
   }
 
   async getUser(token: string): Promise<any> {
@@ -83,6 +88,22 @@ export class AuthService {
     const user = await this._userRepository.findOne(payload.id, {
       relations: this._relations,
     });
-    return user;
+
+    const permissions = user.role.permissions as IPermission[];
+    const newPayload = {
+      id: user.id,
+      email: user.email,
+      role: user.role.role,
+      permissions: permissions.map((p) => p.permission),
+      profile: user.profile,
+    };
+    const accessToken = jwt.sign(newPayload, process.env.JWT_SECRET || "", {
+      expiresIn: "8h",
+    });
+    const refreshToken = jwt.sign(newPayload, process.env.JWT_SECRET || "", {
+      expiresIn: "32h",
+    });
+
+    return { ...user, access: accessToken, refresh: refreshToken };
   }
 }

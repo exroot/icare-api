@@ -4,6 +4,7 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  CreateDateColumn,
 } from "typeorm";
 import { Event } from "./Event";
 import { User } from "./User";
@@ -29,4 +30,10 @@ export class EventLog {
   @ManyToOne(() => User)
   @JoinColumn({ name: "user_id" })
   user!: User;
+
+  @CreateDateColumn({
+    type: "timestamp",
+    default: () => "CURRENT_TIMESTAMP(6)",
+  })
+  created_at!: Date;
 }

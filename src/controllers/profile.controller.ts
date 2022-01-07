@@ -10,9 +10,11 @@ import { profileSchema } from "../validations/profile.schema";
 const MESSAGES = {
   GET: {
     SUCCESS: "Perfil encontrado exitosamente.",
+    ERROR: "Perfil no encontrado.",
   },
   GET_MANY: {
     SUCCESS: "Perfil encontrados exitosamente.",
+    ERROR: "No se encontraron perfiles.",
   },
   POST: {
     SUCCESS: "Perfil creado exitosamente.",
@@ -40,17 +42,17 @@ export const getProfile = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { id } = req.params;
+  const { username } = req.params;
+  const token = req.headers.authorization;
   try {
     const profileRepo = getRepository(Profile);
     const profileService = new ProfileService(profileRepo);
-    const profile = await profileService.get(parseInt(id));
+    const profile = await profileService.getByUsername(username, token || null);
     if (!profile) {
-      return res.status(200).json({
-        status: 200,
-        code: "Successful",
-        message: MESSAGES.GET.SUCCESS,
-        data: [],
+      return res.status(404).json({
+        status: 404,
+        code: "Not found",
+        message: MESSAGES.GET.ERROR,
       });
     }
     return res.status(200).json({
@@ -220,25 +222,40 @@ export const followUser = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { id } = req.params;
+  const { username } = req.params;
   const { user } = req;
   try {
     const userRepo = getRepository(User);
     const profileRepo = getRepository(Profile);
     const profileService = new ProfileService(profileRepo);
-    const userToFollow = await userRepo.findOne(parseInt(id));
+    const profileToFollow = await profileRepo.findOne({
+      where: {
+        username,
+      },
+    });
 
-    if (!userToFollow) {
+    if (!profileToFollow) {
       return res.status(400).json({
         status: 400,
         code: "Bad request",
         message: "No puedes seguir a este usuario.",
       });
     }
+    const isFollowing = await profileService.isFollowing(
+      parseInt(user.id),
+      profileToFollow.user_id
+    );
+    if (isFollowing) {
+      return res.status(400).json({
+        status: 400,
+        code: "Bad request",
+        message: "Ya sigues a este usuario.",
+      });
+    }
 
     const followOk = await profileService.follow(
       parseInt(user.id),
-      userToFollow.id
+      profileToFollow.user_id
     );
     if (!followOk) {
       return res.status(400).json({
@@ -263,16 +280,19 @@ export const unfollowUser = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { id } = req.params;
-  console.log("ID: ", id);
+  const { username } = req.params;
   const { user } = req;
   try {
     const userRepo = getRepository(User);
     const profileRepo = getRepository(Profile);
     const profileService = new ProfileService(profileRepo);
-    const userToFollow = await userRepo.findOne(parseInt(id));
+    const profileToUnfollow = await profileRepo.findOne({
+      where: {
+        username,
+      },
+    });
 
-    if (!userToFollow) {
+    if (!profileToUnfollow) {
       return res.status(400).json({
         status: 400,
         code: "Bad request",
@@ -282,7 +302,7 @@ export const unfollowUser = async (
 
     const isFollowing = await profileService.isFollowing(
       parseInt(user.id),
-      userToFollow.id
+      profileToUnfollow.user_id
     );
     if (!isFollowing) {
       return res.status(400).json({
@@ -293,7 +313,7 @@ export const unfollowUser = async (
     }
     const unfollowOk = await profileService.unfollow(
       parseInt(user.id),
-      userToFollow.id
+      profileToUnfollow.user_id
     );
     if (!unfollowOk) {
       return res.status(400).json({
@@ -340,5 +360,30 @@ export const searchPosts = async (
   } catch (err) {
     console.log("ERROR: ", err);
     next(err);
+  }
+};
+
+export const getSuggestedProfiles = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { user } = req;
+  try {
+    const profileRepo = getRepository(Profile);
+    const profileService = new ProfileService(profileRepo);
+    const profiles = await profileService.getSuggested(parseInt(user.id));
+    if (!profiles) {
+      return res.status(200).json({
+        status: 200,
+        code: "Successful",
+        message: MESSAGES.GET_MANY.ERROR,
+        data: [],
+      });
+    }
+    return res.status(200).json(profiles);
+  } catch (err) {
+    console.log("ERROR: ", err);
+    throw err;
   }
 };

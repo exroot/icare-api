@@ -1,5 +1,12 @@
 import { Router } from "express";
-import { login, register, mySession } from "../controllers/auth.controller";
+import { getRecords } from "../controllers/admin.controller";
+import {
+  login,
+  register,
+  mySession,
+  refreshToken,
+  logout,
+} from "../controllers/auth.controller";
 import {
   createCategory,
   deleteCategory,
@@ -30,6 +37,7 @@ import {
   followUser,
   getProfile,
   getProfiles,
+  getSuggestedProfiles,
   unfollowUser,
   updateProfile,
 } from "../controllers/profile.controller";
@@ -42,9 +50,11 @@ const router = Router();
 router.get("/cronjobs", cronjobs);
 
 /* Auth */
-router.post("/login", login);
-router.post("/register", register);
-router.get("/me", authenticated, mySession);
+router.post("/auth/login", login);
+router.post("/auth/register", register);
+router.get("/auth/user", authenticated, mySession);
+router.post("/auth/token/refresh", refreshToken);
+router.post("/auth/logout", authenticated, logout);
 
 /* Post */
 router.get("/posts", paginationHandler, getPosts);
@@ -71,11 +81,15 @@ router.get("/categories/search", authenticated, searchCategories);
 
 /* Profiles */
 router.get("/profiles", authenticated, paginationHandler, getProfiles);
-router.get("/profiles/:id", getProfile);
+router.get("/profiles/suggested", authenticated, getSuggestedProfiles);
+router.get("/profiles/:username", getProfile);
 router.post("/profiles", authenticated, createProfile);
 router.put("/profiles/:id", authenticated, updateProfile);
-router.post("/users/:id/following", authenticated, followUser);
-router.delete("/users/:id/following", authenticated, unfollowUser);
+router.post("/profiles/:username/following", authenticated, followUser);
+router.delete("/profiles/:username/following", authenticated, unfollowUser);
+
+/* Bitacora */
+router.get("/bitacora", authenticated, paginationHandler, getRecords);
 
 /* Feed */
 router.get("/feed", authenticated, paginationHandler, getFeedPosts);

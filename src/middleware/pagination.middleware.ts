@@ -11,7 +11,7 @@ export const paginationHandler = (
     let sort = req.query.sortBy as string;
     let page = req.query.page;
     let limit = req.query.limit;
-    if (!limit || Number(limit) > 10) {
+    if (!limit) {
       limit = "10";
     }
     if (!page) {

@@ -28,7 +28,7 @@ export abstract class Service {
   async update(id: number, updatedData: any): Promise<any> {
     return this._repository.update(id, updatedData);
   }
-  async delete(id: number): Promise<any> {
+  async delete(id: number, userId: any): Promise<any> {
     if (this._useSoftDeletes) {
       return this._repository.softDelete(id);
     }

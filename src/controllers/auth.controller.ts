@@ -104,10 +104,53 @@ export const mySession = async (
         code: "Not allowed",
       });
     }
+    return res.status(200).json({ ...userSession, is_logged_in: true });
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
+};
+
+export const refreshToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userRepo = getRepository(User);
+    const authService = new AuthService(userRepo);
+    const token = req.body.refresh as string;
+    const userSession = await authService.getUser(token || "");
+    if (!userSession) {
+      return res.status(403).json({
+        status: 403,
+        message: "Usuario invalido",
+        code: "Not allowed",
+      });
+    }
+    return res.status(200).json({ ...userSession, is_logged_in: true });
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
+};
+
+export const logout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { user } = req;
+  try {
+    if (!user) {
+      return res.status(403).json({
+        status: 403,
+        message: "Usuario invalido",
+        code: "Not allowed",
+      });
+    }
     return res.status(200).json({
-      status: 200,
-      code: "Sucess",
-      message: userSession,
+      is_logged_in: false,
     });
   } catch (err) {
     console.log(err);

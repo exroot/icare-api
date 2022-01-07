@@ -32,6 +32,7 @@ export class CategoryService extends Service {
         [sortBy]: orderBy as OrderBy,
       },
       skip: page * limit - limit,
+      take: limit,
     });
   }
 

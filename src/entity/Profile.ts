@@ -25,10 +25,22 @@ export class Profile {
   username!: string;
 
   @Column({ nullable: true })
+  bio!: string;
+
+  @Column({ nullable: true })
+  location_country!: string;
+
+  @Column({ nullable: true })
+  location_city!: string;
+
+  @Column({ nullable: true })
   image_avatar!: string;
 
   @Column({ nullable: true })
   image_cover!: string;
+
+  @Column({ nullable: true })
+  website!: string;
 
   @Column({ type: "int", default: 0 })
   follower_count!: number;

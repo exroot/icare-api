@@ -29,7 +29,7 @@ export const getCategories = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { page, limit, orderBy, sortBy } = req.query;
+  const { page, limit, orderBy, sortBy, show_meta } = req.query;
   try {
     const categoryRepo = getRepository(Category);
     const categoryService = new CategoryService(categoryRepo);
@@ -46,6 +46,9 @@ export const getCategories = async (
         message: MESSAGES.GET_MANY.SUCCESS,
         data: [],
       });
+    }
+    if (show_meta) {
+      return res.status(200).json(categories);
     }
     return res.status(200).json({
       status: 200,
@@ -180,6 +183,7 @@ export const deleteCategory = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
+  const { user } = req;
   try {
     const categoryRepo = getRepository(Category);
     const categoryService = new CategoryService(categoryRepo);
@@ -191,7 +195,7 @@ export const deleteCategory = async (
         status: 404,
       });
     }
-    const deleteResult = await categoryService.delete(parseInt(id));
+    const deleteResult = await categoryService.delete(parseInt(id), user.id);
     return res.status(200).json({
       status: 200,
       code: "Successful",
@@ -209,7 +213,7 @@ export const searchCategories = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { q } = req.query;
+  const { q, show_meta } = req.query;
   try {
     const categoryRepo = getRepository(Category);
     const categoryService = new CategoryService(categoryRepo);
@@ -221,6 +225,9 @@ export const searchCategories = async (
         message: MESSAGES.GET_MANY.SUCCESS,
         data: [],
       });
+    }
+    if (show_meta) {
+      return res.status(200).json(categories);
     }
     return res.status(200).json({
       status: 200,

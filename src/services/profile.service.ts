@@ -2,6 +2,7 @@ import { Service } from "./base.service";
 import { getRepository, Repository } from "typeorm";
 import { IProfile } from "../types/interfaces";
 import { Following } from "../entity/Following";
+import jwt from "jsonwebtoken";
 
 type OrderBy = "ASC" | "DESC" | 1 | -1;
 
@@ -21,6 +22,26 @@ export class ProfileService extends Service {
     return this._repository.findOne(id, {
       relations: this._relations,
     });
+  }
+
+  async getByUsername(username: string, token: string | null): Promise<any> {
+    const userRequester = await this.getUser(token);
+    const userRequested = await this._repository.findOne({
+      where: {
+        username,
+      },
+      relations: this._relations,
+    });
+
+    if (!userRequested) {
+      return null;
+    }
+
+    let isFollowing: any = false;
+    if (userRequested && userRequester) {
+      isFollowing = await this.isFollowing(userRequester.id, userRequested.id);
+    }
+    return { ...userRequested, following: isFollowing };
   }
 
   async getMany(
@@ -101,5 +122,24 @@ export class ProfileService extends Service {
       .orderBy("Post.created_at", "DESC")
       .limit(6)
       .getMany();
+  }
+
+  async getUser(token: string | null): Promise<any> {
+    let userDecoded: any = null;
+    if (!token) {
+      return false;
+    }
+    jwt.verify(token, process.env.JWT_SECRET || "", (err, decodedToken) => {
+      if (err) {
+        return;
+      }
+      userDecoded = decodedToken;
+    });
+    return userDecoded;
+  }
+
+  async getSuggested(userId: number | string): Promise<any> {
+    const suggested = await this._repository.find();
+    return suggested;
   }
 }
