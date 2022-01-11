@@ -72,6 +72,7 @@ export const register = async (
       });
     }
     const newUser = await authService.register(body);
+
     return res.status(200).json({
       status: 200,
       message: "Registro satisfactorio",

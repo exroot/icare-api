@@ -1,10 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { getRepository } from "typeorm";
-import { Post } from "../entity/Post";
 import { Profile } from "../entity/Profile";
 import { User } from "../entity/User";
 import { ProfileService } from "../services/profile.service";
-import { postSchema } from "../validations/post.schema";
 import { profileSchema } from "../validations/profile.schema";
 
 const MESSAGES = {
@@ -175,29 +173,22 @@ export const updateProfile = async (
   next: NextFunction
 ) => {
   const { body } = req;
-  const { id } = req.params;
+  const { username } = req.params;
   try {
     const profileRepo = getRepository(Profile);
     const profileService = new ProfileService(profileRepo);
-    const profileExists = await profileService.existe(parseInt(id));
-    if (!profileExists) {
-      return res.status(404).json({
-        code: "Not found",
-        message: "Perfil no encontrado.",
-        status: 404,
-      });
-    }
-    // Validation
-    const { error } = postSchema.validate(body);
-    if (error) {
+    const profileExists = await profileService.existeProfile(
+      body.username as string
+    );
+    if (profileExists) {
       return res.status(400).json({
         code: "Bad request",
-        message: error,
+        message: "Ya existe un usuario con este nombre de usuario.",
         status: 400,
       });
     }
 
-    const profile = await profileService.update(parseInt(id), body);
+    const profile = await profileService.updateProfile(username, body);
     if (!profile) {
       return res.status(400).json({
         status: 400,
@@ -275,6 +266,39 @@ export const followUser = async (
   }
 };
 
+export const updateProfileImage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    console.log("file: ", req.file);
+    const { username } = req.body;
+    const { imagetype } = req.body;
+    const imageToUpdate =
+      imagetype === "cover" ? "image_cover" : "image_avatar";
+    const filename = req.file ? req.file.filename : "";
+    let imageURL = "";
+    if (process.env.ENV === "development") {
+      imageURL = `${process.env.API_PROTOCOL}://${process.env.API_DOMAIN}:${process.env.API_PORT}/images/${filename}`;
+    } else {
+      imageURL = `${process.env.API_PROTOCOL}://${process.env.API_DOMAIN}/images/${filename}`;
+    }
+    const body = {
+      [`${imageToUpdate}`]: imageURL,
+    };
+    const profileRepo = getRepository(Profile);
+    const profileService = new ProfileService(profileRepo);
+    const profile = await profileService.updateProfile(username, body);
+    return res
+      .status(200)
+      .json({ message: "success ", data: profile, status: 200 });
+  } catch (err) {
+    console.log("error: ", err);
+    throw err;
+  }
+};
+
 export const unfollowUser = async (
   req: Request,
   res: Response,
@@ -333,12 +357,14 @@ export const unfollowUser = async (
   }
 };
 
-export const searchPosts = async (
+export const searchProfiles = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  console.log("TRIGGERED");
   const { q } = req.query;
+  console.log("q: ", q);
   try {
     const profileRepo = getRepository(Profile);
     const profileService = new ProfileService(profileRepo);

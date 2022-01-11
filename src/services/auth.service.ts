@@ -1,13 +1,16 @@
-import { Repository } from "typeorm";
+import { getRepository, Repository } from "typeorm";
 import { IPermission } from "../types/interfaces";
 import jwt from "jsonwebtoken";
+import { EventLog } from "../entity/EventLog";
 
 export class AuthService {
   protected _userRepository: Repository<any>;
   private readonly _relations: string[];
+  private readonly _bitacoraRepo: Repository<EventLog>;
   constructor(userRepository: Repository<any>) {
     this._userRepository = userRepository;
     this._relations = ["profile", "role", "role.permissions"];
+    this._bitacoraRepo = getRepository(EventLog);
   }
 
   async registered(identifier: string): Promise<boolean> {
@@ -45,6 +48,15 @@ export class AuthService {
       password: data.password,
     });
     const { password, ...user } = await this._userRepository.save(userInfo);
+    const bitacoraRecord = this._bitacoraRepo.create({
+      event_id: 5,
+      module: "USER",
+      user_id: user.id,
+    });
+
+    // Insertar record en tabla bitacora
+    await this._bitacoraRepo.save(bitacoraRecord);
+
     return user;
   }
 
@@ -72,6 +84,16 @@ export class AuthService {
     const refreshToken = jwt.sign(payload, process.env.JWT_SECRET || "", {
       expiresIn: "32h",
     });
+
+    const bitacoraRecord = this._bitacoraRepo.create({
+      event_id: 6,
+      module: "USER",
+      user_id: user.id,
+    });
+
+    // Insertar record en tabla bitacora
+    await this._bitacoraRepo.save(bitacoraRecord);
+
     return {
       tokens: { access: accessToken, refresh: refreshToken },
     };

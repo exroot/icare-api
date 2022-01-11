@@ -6,7 +6,7 @@ class Config {
   ENV: string = "";
   TESTING: boolean = true;
   DEBUG: boolean = true;
-  APP_PORT: number = Number(process.env.APP_PORT);
+  API_PORT: number = Number(process.env.API_PORT);
   DB_DRIVER: string = process.env.DB_DRIVER || "";
   DB_NAME: string = process.env.DB_NAME || "";
   DB_HOST: string = process.env.DB_HOST || "";

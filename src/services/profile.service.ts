@@ -1,5 +1,5 @@
 import { Service } from "./base.service";
-import { getRepository, Repository } from "typeorm";
+import { getRepository, Not, Repository } from "typeorm";
 import { IProfile } from "../types/interfaces";
 import { Following } from "../entity/Following";
 import jwt from "jsonwebtoken";
@@ -61,12 +61,28 @@ export class ProfileService extends Service {
     });
   }
 
+  async existeProfile(username: string): Promise<boolean> {
+    console.log("username: ", username);
+    const profile = await this._repository.findOne({
+      where: {
+        username,
+      },
+    });
+    console.log("PERFIL: ", profile);
+    return !!profile;
+  }
+
   async create(newPost: IProfile): Promise<IProfile> {
     return this._repository.save(newPost);
   }
 
-  async update(id: number, updatedData: any): Promise<any> {
-    return this._repository.update(id, updatedData);
+  async updateProfile(username: string, updatedData: any): Promise<any> {
+    const profile = await this._repository.findOne({
+      where: {
+        username,
+      },
+    });
+    return this._repository.save({ ...profile, ...updatedData });
   }
 
   async isFollowing(user_id: number, followedId: number) {
@@ -109,7 +125,7 @@ export class ProfileService extends Service {
 
   async search(text: string): Promise<IProfile[]> {
     return this._repository
-      .createQueryBuilder("Post")
+      .createQueryBuilder("Profile")
       .where("Profile.first_name LIKE :first_name", {
         first_name: `%${text}%`,
       })
@@ -119,7 +135,7 @@ export class ProfileService extends Service {
       .orWhere("Profile.username LIKE :username", {
         username: `%${text}%`,
       })
-      .orderBy("Post.created_at", "DESC")
+      .orderBy("Profile.created_at", "DESC")
       .limit(6)
       .getMany();
   }
@@ -139,7 +155,12 @@ export class ProfileService extends Service {
   }
 
   async getSuggested(userId: number | string): Promise<any> {
-    const suggested = await this._repository.find();
+    console.log("triggered");
+    const suggested = await this._repository.find({
+      where: { user_id: Not(userId) },
+      take: 5,
+      relations: this._relations,
+    });
     return suggested;
   }
 }

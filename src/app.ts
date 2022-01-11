@@ -9,13 +9,14 @@ const app = express();
 export const createApp = (configInstance: any) => {
   try {
     const appConfig = config[configInstance];
-    const { APP_PORT, DB_DRIVER, DB_NAME, DB_HOST, DB_PORT, DB_USER, DB_PASS } =
+    const { API_PORT, DB_DRIVER, DB_NAME, DB_HOST, DB_PORT, DB_USER, DB_PASS } =
       new appConfig();
     app.use(urlencoded({ extended: true }));
     app.use(json());
     app.use(cors());
     app.use(router);
-    app.listen(APP_PORT, () => {
+    app.use("/images", express.static(__dirname + "/../static/images"));
+    app.listen(API_PORT, () => {
       createConnection({
         type: DB_DRIVER,
         host: DB_HOST,
@@ -33,7 +34,7 @@ export const createApp = (configInstance: any) => {
           console.log("Database instantiated");
         })
         .catch((error) => console.log(error));
-      console.log(`The application is listening on port ${APP_PORT}!`);
+      console.log(`The application is listening on port ${API_PORT}!`);
     });
   } catch (err) {
     console.log(err);

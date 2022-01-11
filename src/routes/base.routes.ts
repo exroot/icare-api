@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getRecords } from "../controllers/admin.controller";
+import { getRecords, getReports } from "../controllers/admin.controller";
 import {
   login,
   register,
@@ -38,11 +38,49 @@ import {
   getProfile,
   getProfiles,
   getSuggestedProfiles,
+  searchProfiles,
   unfollowUser,
   updateProfile,
+  updateProfileImage,
 } from "../controllers/profile.controller";
 import { authenticated } from "../middleware/auth.middleware";
 import { paginationHandler } from "../middleware/pagination.middleware";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, __dirname + "/../../static/images");
+  },
+  filename: function (req, file, cb) {
+    const path = __dirname + "/../../static/images";
+    const prefix = `${req.body.username}_${req.body.imagetype}`;
+    fs.readdir(path, (err, files) => {
+      const newRegex = new RegExp("^" + prefix);
+      for (let i = 0, len = files.length; i < len; i++) {
+        const match = files[i].match(newRegex);
+        console.log("file: ", files[i]);
+        console.log("regex: ", newRegex);
+        if (match !== null)
+          fs.unlink(path + "/" + files[i], (err) => {
+            if (err) console.log(err);
+            else {
+              console.log(`\nDeleted file: ${match[0]}`);
+            }
+          });
+      }
+    });
+    cb(null, `${prefix}_${Date.now()}.jpg`); //Appending .jpg
+  },
+});
+
+const upload = multer({
+  dest: __dirname + "/../../static/images",
+  storage: storage,
+});
+
+// const upload = multer({ dest: __dirname + "/../../static/images" });
 
 const router = Router();
 
@@ -81,15 +119,23 @@ router.get("/categories/search", authenticated, searchCategories);
 
 /* Profiles */
 router.get("/profiles", authenticated, paginationHandler, getProfiles);
-router.get("/profiles/suggested", authenticated, getSuggestedProfiles);
-router.get("/profiles/:username", getProfile);
 router.post("/profiles", authenticated, createProfile);
-router.put("/profiles/:id", authenticated, updateProfile);
+router.get("/profiles/suggested", authenticated, getSuggestedProfiles);
+router.get("/profiles/search", searchProfiles);
+router.get("/profiles/:username", getProfile);
+router.put("/profiles/:username", authenticated, updateProfile);
+router.post(
+  "/profiles/:username",
+  authenticated,
+  upload.single("image"),
+  updateProfileImage
+);
 router.post("/profiles/:username/following", authenticated, followUser);
 router.delete("/profiles/:username/following", authenticated, unfollowUser);
 
 /* Bitacora */
-router.get("/bitacora", authenticated, paginationHandler, getRecords);
+router.get("/bitacora", paginationHandler, getRecords);
+router.get("/bitacora/reports", getReports);
 
 /* Feed */
 router.get("/feed", authenticated, paginationHandler, getFeedPosts);

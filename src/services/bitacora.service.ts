@@ -5,16 +5,25 @@ import jwt from "jsonwebtoken";
 import { EventLog } from "../entity/EventLog";
 import { addYears, subYears } from "date-fns";
 import moment from "moment";
+import { Post } from "../entity/Post";
+import { User } from "../entity/User";
+import { Comment } from "../entity/Comment";
 
 type OrderBy = "ASC" | "DESC" | 1 | -1;
 
 export class BitacoraService {
   protected _bitacoraRepo: Repository<EventLog>;
+  protected _postsRepo: Repository<Post>;
+  protected _commentsRepo: Repository<Comment>;
+  protected _usersRepo: Repository<User>;
   protected _relations: string[];
 
   constructor() {
     this._bitacoraRepo = getRepository(EventLog);
     this._relations = ["event", "user", "user.profile"];
+    this._postsRepo = getRepository(Post);
+    this._commentsRepo = getRepository(Comment);
+    this._usersRepo = getRepository(User);
   }
 
   async getMany(
@@ -79,23 +88,11 @@ export class BitacoraService {
       const dateEnd = moment(date_end, "DD/MM/YYYY"); // 1st argument - string, 2nd argument - format
       const dateObjectEnd = dateEnd.toDate(); // convert moment.js object to Date object
 
-      // const [day_start, month_start, year_start] = date_start.split("/");
-      // const [day_end, month_end, year_end] = date_start.split("/");
-      // const startDate = new Date(
-      //   +year_start,
-      //   parseInt(month_start) - 1,
-      //   +day_start
-      // );
-      // const endDate = new Date(+year_end, parseInt(month_end) - 1, +day_end);
-
       const dates = Between(
         dateObjectStart.toISOString(),
         dateObjectEnd.toISOString()
       );
 
-      console.log("DADA ISO: ", dateObjectStart);
-      console.log("PUPU ISO: ", dateObjectEnd);
-      console.log("BETWEEN: ", dates);
       args = {
         ...args,
         where: {
@@ -105,5 +102,59 @@ export class BitacoraService {
       };
     }
     return this._bitacoraRepo.find({ ...args, relations: this._relations });
+  }
+
+  async getReport(module: string, date_start: string, date_end: string) {
+    const dateStart = moment(date_start, "DD-MM-yyyy"); // 1st argument - string, 2nd argument - format
+    const dateObjectStart = dateStart.toDate(); // convert moment.js object to Date object
+
+    const dateEnd = moment(date_end, "DD-MM-yyyy"); // 1st argument - string, 2nd argument - format
+    const dateObjectEnd = dateEnd.toDate(); // convert moment.js object to Date object
+
+    const dates = Between(
+      dateObjectStart.toISOString(),
+      dateObjectEnd.toISOString()
+    );
+
+    if (module === "REGISTERS") {
+      return this._bitacoraRepo.find({
+        where: {
+          module: "USERS",
+          event_id: 5,
+          created_at: dates,
+        },
+        relations: this._relations,
+      });
+    }
+    if (module === "LOGINS") {
+      return this._bitacoraRepo.find({
+        where: {
+          module: "USER",
+          event_id: 6,
+          created_at: dates,
+        },
+        relations: this._relations,
+      });
+    }
+    if (module === "POSTS") {
+      return this._bitacoraRepo.find({
+        where: {
+          event_id: 1,
+          module: "POSTS",
+          created_at: dates,
+        },
+        relations: this._relations,
+      });
+    }
+    if (module === "COMMENTS") {
+      return this._bitacoraRepo.find({
+        where: {
+          event_id: 1,
+          module: "COMMENTS",
+          created_at: dates,
+        },
+        relations: this._relations,
+      });
+    }
   }
 }

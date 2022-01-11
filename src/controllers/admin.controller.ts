@@ -79,6 +79,32 @@ export const getRecords = async (
   }
 };
 
+export const getReports = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { module, date_start, date_end } = req.query;
+  console.log(`${module} ${date_start} ${date_end}`);
+  try {
+    const bitacoraService = new BitacoraService();
+    const reportsRecords = await bitacoraService.getReport(
+      module as string,
+      date_start as string,
+      date_end as string
+    );
+    return res.status(200).json({
+      status: 200,
+      code: "Successful",
+      message: MESSAGES.GET_MANY.SUCCESS,
+      data: reportsRecords,
+    });
+  } catch (err) {
+    console.log("error: ", err);
+    throw err;
+  }
+};
+
 // export const getRecordsFiltered = async (
 //   req: Request,
 //   res: Response,
