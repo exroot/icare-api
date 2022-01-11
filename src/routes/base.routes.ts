@@ -57,6 +57,9 @@ const storage = multer.diskStorage({
     const path = __dirname + "/../../static/images";
     const prefix = `${req.body.username}_${req.body.imagetype}`;
     fs.readdir(path, (err, files) => {
+      if (!files) {
+        return;
+      }
       const newRegex = new RegExp("^" + prefix);
       for (let i = 0, len = files.length; i < len; i++) {
         const match = files[i].match(newRegex);
