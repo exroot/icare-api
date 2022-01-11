@@ -54,26 +54,26 @@ const storage = multer.diskStorage({
     cb(null, __dirname + "/../../static/images");
   },
   filename: function (req, file, cb) {
-    const path = __dirname + "/../../static/images";
+    // const path = __dirname + "/../../static/images";
     const prefix = `${req.body.username}_${req.body.imagetype}`;
-    fs.readdir(path, (err, files) => {
-      if (!files) {
-        return;
-      }
-      const newRegex = new RegExp("^" + prefix);
-      for (let i = 0, len = files.length; i < len; i++) {
-        const match = files[i].match(newRegex);
-        console.log("file: ", files[i]);
-        console.log("regex: ", newRegex);
-        if (match !== null)
-          fs.unlink(path + "/" + files[i], (err) => {
-            if (err) console.log(err);
-            else {
-              console.log(`\nDeleted file: ${match[0]}`);
-            }
-          });
-      }
-    });
+    // fs.readdir(path, (err, files) => {
+    //   if (!files) {
+    //     return;
+    //   }
+    //   const newRegex = new RegExp("^" + prefix);
+    //   for (let i = 0, len = files.length; i < len; i++) {
+    //     const match = files[i].match(newRegex);
+    //     console.log("file: ", files[i]);
+    //     console.log("regex: ", newRegex);
+    //     if (match !== null)
+    //       fs.unlink(path + "/" + files[i], (err) => {
+    //         if (err) console.log(err);
+    //         else {
+    //           console.log(`\nDeleted file: ${match[0]}`);
+    //         }
+    //       });
+    //   }
+    // });
     cb(null, `${prefix}_${Date.now()}.jpg`); //Appending .jpg
   },
 });
