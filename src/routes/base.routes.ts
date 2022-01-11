@@ -50,9 +50,9 @@ import path from "path";
 import fs from "fs";
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, __dirname + "/../../static/images");
-  },
+  // destination: function (req, file, cb) {
+  //   cb(null, __dirname + "/../../static/images");
+  // },
   filename: function (req, file, cb) {
     // const path = __dirname + "/../../static/images";
     const prefix = `${req.body.username}_${req.body.imagetype}`;
