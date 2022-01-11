@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "test",
-    "build": "tsc --project ./",
-    "start": "ts-node src/index.ts",
+    "start": "node build/index.js",
+    "build": "tsc",
+    "postinstall": "npm run build",
     "dev": "nodemon --config nodemon.json src/index.ts",
     "dev:debug": "nodemon --config nodemon.json --inspect-brk src/index.ts",
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
