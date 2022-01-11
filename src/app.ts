@@ -16,7 +16,7 @@ export const createApp = (configInstance: any) => {
     app.use(cors());
     app.use(router);
     app.use("/images", express.static(__dirname + "/../static/images"));
-    app.listen(API_PORT, () => {
+    app.listen(process.env.PORT || API_PORT, () => {
       createConnection({
         type: DB_DRIVER,
         host: DB_HOST,
@@ -42,7 +42,9 @@ export const createApp = (configInstance: any) => {
           console.log("Database instantiated");
         })
         .catch((error) => console.log(error));
-      console.log(`The application is listening on port ${API_PORT}!`);
+      console.log(
+        `The application is listening on port ${process.env.PORT || API_PORT}!`
+      );
     });
   } catch (err) {
     console.log(err);
