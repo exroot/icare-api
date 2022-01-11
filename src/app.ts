@@ -3,6 +3,16 @@ import { config } from "./instance/config";
 import { createConnection } from "typeorm";
 import cors from "cors";
 import router from "./routes/base.routes";
+import { Category } from "./entity/Category";
+import { Comment } from "./entity/Comment";
+import { Event } from "./entity/Event";
+import { EventLog } from "./entity/EventLog";
+import { Following } from "./entity/Following";
+import { Permission } from "./entity/Permission";
+import { Post } from "./entity/Post";
+import { Profile } from "./entity/Profile";
+import { Role } from "./entity/Role";
+import { User } from "./entity/User";
 
 const app = express();
 
@@ -24,7 +34,18 @@ export const createApp = (configInstance: any) => {
         username: DB_USER,
         password: DB_PASS,
         database: DB_NAME,
-        entities: [__dirname + "/entity/*.ts"],
+        entities: [
+          Category,
+          Comment,
+          Event,
+          EventLog,
+          Following,
+          Permission,
+          Post,
+          Profile,
+          Role,
+          User,
+        ],
         synchronize: true,
         logging: false,
         ssl: {
