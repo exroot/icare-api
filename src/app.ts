@@ -27,6 +27,11 @@ export const createApp = (configInstance: any) => {
         entities: [__dirname + "/entity/*.ts"],
         synchronize: true,
         logging: false,
+        extra: {
+          ssl: {
+            rejectUnauthorized: false,
+          },
+        },
       })
         .then(async (connection) => {
           await connection.synchronize();
