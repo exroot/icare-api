@@ -33,7 +33,7 @@ export class User {
   @JoinColumn({ name: "profile_id" })
   profile!: Profile;
 
-  @Column({ type: "int", default: 1 })
+  @Column({ type: "int", default: 4 })
   rol_id!: number;
 
   @ManyToOne(() => Role, (role) => role.users)

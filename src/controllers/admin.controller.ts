@@ -42,7 +42,7 @@ export const getRecords = async (
     date_start,
     date_end,
   } = req.query;
-  console.log("identifier: ", identifier as string);
+  console.log("identifier: ", q);
   try {
     const bitacoraService = new BitacoraService();
     const bitacoraRecords = await bitacoraService.getMany(
@@ -84,14 +84,16 @@ export const getReports = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { module, date_start, date_end } = req.query;
+  const { module, date_start, date_end, identifier, special } = req.query;
   console.log(`${module} ${date_start} ${date_end}`);
   try {
     const bitacoraService = new BitacoraService();
     const reportsRecords = await bitacoraService.getReport(
       module as string,
       date_start as string,
-      date_end as string
+      date_end as string,
+      identifier as string,
+      special as string
     );
     return res.status(200).json({
       status: 200,

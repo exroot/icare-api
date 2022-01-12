@@ -2,13 +2,14 @@ import { getRepository, Repository } from "typeorm";
 import { IPermission } from "../types/interfaces";
 import jwt from "jsonwebtoken";
 import { EventLog } from "../entity/EventLog";
+import { User } from "../entity/User";
 
 export class AuthService {
   protected _userRepository: Repository<any>;
   private readonly _relations: string[];
   private readonly _bitacoraRepo: Repository<EventLog>;
   constructor(userRepository: Repository<any>) {
-    this._userRepository = userRepository;
+    this._userRepository = getRepository(User);
     this._relations = ["profile", "role", "role.permissions"];
     this._bitacoraRepo = getRepository(EventLog);
   }
@@ -127,5 +128,25 @@ export class AuthService {
     });
 
     return { ...user, access: accessToken, refresh: refreshToken };
+  }
+
+  async changePassword(new_password: string, email: string) {
+    const userRepo = getRepository(User);
+    const user = await userRepo.findOne({ where: { email } });
+    if (!user) {
+      return false;
+    }
+    user.password = new_password;
+    const userUpdated = await userRepo.save(user);
+    return userUpdated;
+  }
+
+  async disableAccount(email: string) {
+    const userRepo = getRepository(User);
+    const user = await userRepo.findOne({ where: { email } });
+    if (user) {
+      await userRepo.softDelete(user.id);
+      return user;
+    }
   }
 }

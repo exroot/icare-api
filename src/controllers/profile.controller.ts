@@ -413,3 +413,29 @@ export const getSuggestedProfiles = async (
     throw err;
   }
 };
+
+export const getFollowers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { username } = req.params;
+  try {
+    const profileRepo = getRepository(Profile);
+    const profileService = new ProfileService(profileRepo);
+    const { follower_list, following_list } = await profileService.getFollowers(
+      username
+    );
+    return res.status(200).json({
+      status: 200,
+      code: "success",
+      data: {
+        follower_list,
+        following_list,
+      },
+    });
+  } catch (err) {
+    console.log("error: ", err);
+    throw err;
+  }
+};

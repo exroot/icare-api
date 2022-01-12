@@ -168,6 +168,7 @@ export class PostService extends Service {
   }
 
   async getFeedPosts(page: number, limit: number, userId: number) {
+    console.log("USER ID: ", userId);
     const posts = await this._repository.query(`
     SELECT
         posts.id,
@@ -192,8 +193,8 @@ export class PostService extends Service {
         INNER JOIN roles
             ON users.rol_id = roles.id
     WHERE
-        users.id != ${userId}
-        AND EXISTS (
+        users.id = ${userId}
+        OR EXISTS (
             SELECT
                 *
             FROM

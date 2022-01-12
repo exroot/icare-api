@@ -6,6 +6,8 @@ import {
   mySession,
   refreshToken,
   logout,
+  changePassowrd,
+  disabledAccount,
 } from "../controllers/auth.controller";
 import {
   createCategory,
@@ -35,6 +37,7 @@ import {
 import {
   createProfile,
   followUser,
+  getFollowers,
   getProfile,
   getProfiles,
   getSuggestedProfiles,
@@ -50,30 +53,29 @@ import path from "path";
 import fs from "fs";
 
 const storage = multer.diskStorage({
-  // destination: function (req, file, cb) {
-  //   cb(null, __dirname + "/../../static/images");
-  // },
+  destination: function (req, file, cb) {
+    cb(null, __dirname + "/../../static/images");
+  },
   filename: function (req, file, cb) {
-    // const path = __dirname + "/../../static/images";
+    const path = __dirname + "/../../static/images";
     const prefix = `${req.body.username}_${req.body.imagetype}`;
-    // fs.readdir(path, (err, files) => {
-    //   if (!files) {
-    //     return;
-    //   }
-    //   const newRegex = new RegExp("^" + prefix);
-    //   for (let i = 0, len = files.length; i < len; i++) {
-    //     const match = files[i].match(newRegex);
-    //     console.log("file: ", files[i]);
-    //     console.log("regex: ", newRegex);
-    //     if (match !== null)
-    //       fs.unlink(path + "/" + files[i], (err) => {
-    //         if (err) console.log(err);
-    //         else {
-    //           console.log(`\nDeleted file: ${match[0]}`);
-    //         }
-    //       });
-    //   }
-    // });
+    fs.readdir(path, (err, files) => {
+      if (!files) {
+        return;
+      }
+      const newRegex = new RegExp("^" + prefix);
+      for (let i = 0, len = files.length; i < len; i++) {
+        const match = files[i].match(newRegex);
+
+        if (match !== null)
+          fs.unlink(path + "/" + files[i], (err) => {
+            if (err) console.log(err);
+            else {
+              console.log(`\nDeleted file: ${match[0]}`);
+            }
+          });
+      }
+    });
     cb(null, `${prefix}_${Date.now()}.jpg`); //Appending .jpg
   },
 });
@@ -96,6 +98,8 @@ router.post("/auth/register", register);
 router.get("/auth/user", authenticated, mySession);
 router.post("/auth/token/refresh", refreshToken);
 router.post("/auth/logout", authenticated, logout);
+router.post("/auth/change-password", authenticated, changePassowrd);
+router.post("/auth/disable-account", authenticated, disabledAccount);
 
 /* Post */
 router.get("/posts", paginationHandler, getPosts);
@@ -133,6 +137,7 @@ router.post(
   upload.single("image"),
   updateProfileImage
 );
+router.get("/profiles/:username/following", authenticated, getFollowers);
 router.post("/profiles/:username/following", authenticated, followUser);
 router.delete("/profiles/:username/following", authenticated, unfollowUser);
 

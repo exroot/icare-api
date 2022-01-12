@@ -1,8 +1,10 @@
 import { Service } from "./base.service";
-import { getRepository, Not, Repository } from "typeorm";
+import { createQueryBuilder, getRepository, Not, Repository } from "typeorm";
 import { IProfile } from "../types/interfaces";
 import { Following } from "../entity/Following";
 import jwt from "jsonwebtoken";
+import { Profile } from "../entity/Profile";
+import { User } from "../entity/User";
 
 type OrderBy = "ASC" | "DESC" | 1 | -1;
 
@@ -154,13 +156,71 @@ export class ProfileService extends Service {
     return userDecoded;
   }
 
-  async getSuggested(userId: number | string): Promise<any> {
-    console.log("triggered");
-    const suggested = await this._repository.find({
-      where: { user_id: Not(userId) },
-      take: 5,
-      relations: this._relations,
+  async getFollowers(username: string) {
+    const profile = await this._repository.findOne({
+      where: { username },
+      relations: ["user"],
     });
-    return suggested;
+    const followRepo = getRepository(Following);
+    const followersResults = await followRepo.find({
+      where: {
+        followed_id: profile.user.id,
+      },
+      select: ["user_id"],
+    });
+    const followingResults = await followRepo.find({
+      where: {
+        user_id: profile.user.id,
+      },
+      select: ["followed_id"],
+    });
+    const followersIds = followersResults.map((record) => record.user_id);
+    const followingIds = followingResults.map((record) => record.followed_id);
+
+    let followers: any[] = [],
+      following: any[] = [];
+    if (followersIds.length) {
+      followers = await createQueryBuilder(User, "user")
+        .where("user.id IN(:...ids)", { ids: followersIds })
+        .leftJoinAndSelect("user.profile", "profile")
+        .getMany();
+    }
+    if (followingIds.length) {
+      following = await createQueryBuilder(User, "user")
+        .where("user.id IN(:...ids)", { ids: followingIds })
+        .leftJoinAndSelect("user.profile", "profile")
+        .getMany();
+    }
+    return {
+      follower_list: followers,
+      following_list: following,
+    };
+  }
+
+  async getSuggested(userId: number | string): Promise<any> {
+    const followRepo = getRepository(Following);
+    const followingResults = await followRepo.find({
+      where: {
+        user_id: userId,
+      },
+      select: ["followed_id"],
+    });
+    const followingIds = followingResults.map((record) => record.followed_id);
+    const suggesteds = await createQueryBuilder(User, "user")
+      .where("user.id NOT IN(:...ids)", { ids: [...followingIds, userId] })
+      .leftJoinAndSelect("user.profile", "profile")
+      .take(5)
+      .getMany();
+
+    const suggestions = suggesteds.map((record) => {
+      const { profile, ...user } = record;
+      return { ...profile, user: user };
+    });
+    // const suggested = await this._repository.find({
+    //   where: { user_id: Not(userId) },
+    //   take: 5,
+    //   relations: this._relations,
+    // });
+    return suggestions;
   }
 }

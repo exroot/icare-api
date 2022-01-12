@@ -160,7 +160,7 @@ const posts = () => {
         max: 100,
         min: 1,
       }),
-      created_at: faker.datatype.datetime(),
+      created_at: faker.date.between("2021-01-01", "2022-01-12"),
     };
     postArr.push(postInfo);
   }
